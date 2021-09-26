@@ -55,7 +55,7 @@ TGraph RK4Solve(double(*f)(double x, double y), double y0,
 }
 
 /// @fn vector<double> RK4StepN(vector<pfunc_t> &fnlist, vector<double> y,
-///			double x, double h)
+///			double x, double h, void* params)
 /// @brief Perform one step using the RK4 algorithm
 ///
 /// Call this function directly instead of using the higher level interfaces
@@ -64,28 +64,29 @@ TGraph RK4Solve(double(*f)(double x, double y), double y0,
 /// @param[in] y vector of initial conditions (this is updated by the step taken)
 /// @param[in] x value of dependent vaaiable
 /// @param[in] h step size to use
+/// @param[in] params pointer to function parameters
 ///
 /// Returns the new vector of y values
 vector<double> RK4StepN(vector<pfunc_t> &fnlist, vector<double> y,
-			double x, double h){
+			double x, double h, void* params){
   int nFcn=fnlist.size();
   vector<double> k1(nFcn), k2(nFcn), k3(nFcn), k4(nFcn);
   vector<double> ytmp(nFcn);
 
   for (int i=0; i<nFcn; i++){
-    k1[i] = h * fnlist[i](x, y);
+    k1[i] = h * fnlist[i](x, y, params);
     ytmp[i] = y[i] + k1[i]/2;
   }
   for (int i=0; i<nFcn; i++){
-    k2[i] = h * fnlist[i](x+h/2, ytmp);
+    k2[i] = h * fnlist[i](x+h/2, ytmp, params);
     ytmp[i] = y[i] + k2[i]/2;
   }
   for (int i=0; i<nFcn; i++){
-    k3[i] = h * fnlist[i](x+h/2, ytmp);
+    k3[i] = h * fnlist[i](x+h/2, ytmp, params);
     ytmp[i] = y[i] + k3[i];
   }
   for (int i=0; i<nFcn; i++){
-    k4[i] = h * fnlist[i](x+h, ytmp);
+    k4[i] = h * fnlist[i](x+h, ytmp, params);
   }
   // calculate next step
   for (int i=0; i<nFcn; i++) {
@@ -109,7 +110,7 @@ vector<TGraph> SetupGraphs(int nFcn){
 
 ///
 /// \fn vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
-///			 int nsteps, double x0, double xmax, pfunc_t fstop=0)
+///			 int nsteps, double x0, double xmax, void *params, pfunc_t fstop=0)
 /// \brief RK4 solver for a system of ODEs.
 ///
 /// Solves a series of coupled ODEs using the RK4 method using a fixed number of steps in range [x0,xmax]
@@ -118,13 +119,15 @@ vector<TGraph> SetupGraphs(int nFcn){
 /// \param[in] nsteps maximum number of steps in simulation
 /// \param[in] x0 starting value of dependent vaaiable
 /// \param[in] xmax maximum value of dependent variable
+/// \param[in] params pointer to function parameters
 /// \param[in] fstop optional function of dependent varibles to define a stopping
 ///        condition based on the results of the approximation
 ///
 /// Returns a set of TGraphs of y_i vs x for each dependent variable
 ///
 vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
-			 int nsteps, double x0, double xmax, pfunc_t fstop){
+			 int nsteps, double x0, double xmax, void *params,
+			 pfunc_t fstop){
 
   assert(fnlist.size() == y0.size());   // need one initial condition per function
   int nFcn=fnlist.size();
@@ -137,14 +140,13 @@ vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
   for (int i=0; i<nFcn; i++) tg[i].SetPoint(0,x0,y0[i]);
   
   for (int n=0; n<nsteps; n++){
-    ytmp=RK4StepN(fnlist, y, x, h);
+    ytmp=RK4StepN(fnlist, y, x, h, params);
     // advance to next step and store results in graphs
     y=ytmp;
     x+=h;
     for (int i=0; i<nFcn; i++) tg[i].SetPoint(n+1,x,y[i]);
-    if (fstop && fstop(x,ytmp)) break;
+    if (fstop && fstop(x,ytmp,params)) break;
   }
-  
   return tg;
 }
 
@@ -152,7 +154,7 @@ vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
 
 ///
 /// \fn void RK4SolveNx(vector<pfunc_t> &fnlist, vector<double> &y,
-///			 int nsteps, double x0, double xmax, pfunc_t fstop)
+///			 int nsteps, double x0, double xmax, void *params, pfunc_t fstop)
 /// \brief RK4 solver for a system of ODEs.
 ///
 /// Solves a series of coupled ODEs using the RK4 method using a fixed number of steps in range [x0,xmax]
@@ -161,12 +163,13 @@ vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
 /// \param[in] nsteps maximum number of steps in simulation
 /// \param[in] x0 starting value of dependent variable
 /// \param[in] xmax maximum value of dependent variable
+/// \param[in] params pointer to function parameters
 /// \param[in] fstop optional function of dependent varibles to define a stopping
 ///        condition based on the results of the approximation
 ///
 ///
 void RK4SolveNx(vector<pfunc_t> &fnlist, vector<double> &y,
-			 int nsteps, double x0, double xmax, pfunc_t fstop){
+		int nsteps, double x0, double xmax, void *params, pfunc_t fstop){
 
   assert(fnlist.size() == y.size());   // need one initial condition per function
   int nFcn=fnlist.size();
@@ -175,18 +178,18 @@ void RK4SolveNx(vector<pfunc_t> &fnlist, vector<double> &y,
   vector<double> ytmp(nFcn);
     
   for (int n=0; n<nsteps; n++){
-    ytmp=RK4StepN(fnlist, y, x, h);
+    ytmp=RK4StepN(fnlist, y, x, h, params);
     y=ytmp;
     x+=h;
     //printf("%lg %lg %lg\n",x,y[0],y[1]);
-    if (fstop && fstop(x,ytmp)) break;
+    if (fstop && fstop(x,ytmp,params)) break;
   }
 }
 
 
 ///
 /// \fn vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
-///			 double h, double x0, pfunc_t fstop, int nmax=1000);
+///			 double h, double x0, pfunc_t fstop, void *params, int nmax=1000);
 /// \brief RK4 solver for a system of ODEs.
 ///
 /// Solves a series of coupled ODEs using the RK4 method. This version is intended to run until the stopping condition is met.
@@ -196,21 +199,22 @@ void RK4SolveNx(vector<pfunc_t> &fnlist, vector<double> &y,
 /// \param[in] x0 starting value of dependent vaaiable
 /// \param[in] fstop function of dependent varibles to define a stopping
 ///        condition based on the results of the approximation
+/// \param[in] params pointer to function parameters
 /// \param[in] nmax maximum number of steps to use in case stopping isn't satisfied
 ///
 /// Returns a set of TGraphs of y_i vs x for each dependent variable
 ///
 vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
-			 double h, double x0, pfunc_t fstop,
+			 double h, double x0, pfunc_t fstop, void *params,
 			 int nmax){
   double xmax=x0+h*nmax;  // serves as a backup stopping condition 
-  return RK4SolveN(fnlist, y0, nmax, x0, xmax, fstop);
+  return RK4SolveN(fnlist, y0, nmax, x0, xmax, params, fstop);
 }
 
 ///
 /// \fn vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
 ///			  int nsteps, double x0, double xmax, pfunc_t fstop=0,
-///			  double errdef=1e-9, int maxrep=5);
+///			  void *params, double errdef=1e-9, int maxrep=5);
 /// \brief RK4 solver with adaptive step size for a system of ODEs.
 ///
 /// \param[in] fnlist vector of function pointers to the ODEs describing the system
@@ -218,6 +222,7 @@ vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
 /// \param[in] nsteps maximum number of steps in simulation
 /// \param[in] x0 starting value of dependent vaaiable
 /// \param[in] xmax maximum value of dependent variable
+/// \param[in] params pointer to function parameters
 /// \param[in] fstop function of dependent varibles to define a stopping
 ///        condition based on the results of the approximation
 /// \param[in] errdef requested error per step. The error calculation
@@ -230,7 +235,7 @@ vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
 /// This code loosely follows the examples in Fitzpatrick and
 /// Numerical Recipes to adapt the step sizes
 vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
-			  int nsteps, double x0, double xmax, pfunc_t fstop,
+			  int nsteps, double x0, double xmax, void *params, pfunc_t fstop,
 			  double errdef, int maxrep){
   // **
   // The following could be passed as parameters, to allow more control
@@ -256,10 +261,10 @@ vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
     
     while (nreps<maxrep){ // take the steps, adapting step size as needed
       //full step
-      y1=RK4StepN(fnlist, y, x, h);
+      y1=RK4StepN(fnlist, y, x, h, params);
       // two half steps
-      y2=RK4StepN(fnlist, y, x, h/2);
-      y2=RK4StepN(fnlist, y2, x+h/2, h/2);
+      y2=RK4StepN(fnlist, y, x, h/2, params);
+      y2=RK4StepN(fnlist, y2, x+h/2, h/2, params);
       h_last=h;     // last step size used to evaluate the functions
       
       // Calculate truncation error, comparing the full step to two half steps
@@ -284,7 +289,7 @@ vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
     // advance to next step and store results in graphs
     y=y2;
     for (int i=0; i<nFcn; i++) tg[i].SetPoint(tg[i].GetN(),x+h_last,y[i]);
-    if (fstop && fstop(x+h_last,y2)) break;  // fix me
+    if (fstop && fstop(x+h_last,y2,params)) break;  // fix me
     x+=h_new;
   }
 
@@ -293,7 +298,7 @@ vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
 
 ///
 /// \fn vector<TGraph>  RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
-///			  double h,  double x0, pfunc_t fstop,
+///			  double h,  double x0, pfunc_t fstop, void *params,
 ///			  double errdef=1e-9, int maxrep=5, int maxsteps=1000);
 /// \brief RK4 solver with adaptive step size for a system of ODEs.
 ///
@@ -304,6 +309,7 @@ vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
 /// \param[in] x0 starting value of dependent vaaiable
 /// \param[in] fstop function of dependent varibles to define a stopping
 ///        condition based on the results of the approximation
+/// \param[in] params pointer to function parameters
 /// \param[in] errdef requested error per step. The error calculation
 ///         corresponds to a relative (absolute) error estimate
 ///         for y values large (small) compared to errdef
@@ -313,8 +319,8 @@ vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
 /// Returns a set of TGraphs of y_i vs x for each dependent variable
 ///
 vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
-			  double h, double x0, pfunc_t fstop,
+			  double h, double x0, pfunc_t fstop, void *params,
 			  double errdef, int maxrep, int maxsteps){
   double xmax=x0+h*maxsteps;  // serves as a backup stopping condition
-  return RK4SolveNA(fnlist, y0, maxsteps, x0, xmax, fstop, errdef, maxrep);
+  return RK4SolveNA(fnlist, y0, maxsteps, x0, xmax, params, fstop, errdef, maxrep);
 }

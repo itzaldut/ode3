@@ -36,7 +36,7 @@ const double air_k=0.1; ///< constant for air resistance. mass DOES matter with 
 /// \brief Change in position along \f$\hat i\f$ axis
 /// \param[in] x independent variable
 /// \param[in] y dependent variables
-double f_ri(double x, const vector<double> &y){ 
+double f_ri(double x, const vector<double> &y, void *params=0){ 
   (void) x;   // prevent unused variable warning
   return y[1];
 }
@@ -44,7 +44,7 @@ double f_ri(double x, const vector<double> &y){
 /// \brief Change in velocity along  \f$\hat i\f$ axis
 /// \param[in] x independent variable
 /// \param[in] y dependent variables
-double f_vi(double x, const vector<double> &y){ 
+double f_vi(double x, const vector<double> &y, void *params){ 
   (void) x;
   return -air_k * sqrt(y[1]*y[1] + y[3]*y[3]) * y[1] / m;
   // return 0;  // if no air, no forces/acceleration along i direction in this problem
@@ -53,7 +53,7 @@ double f_vi(double x, const vector<double> &y){
 /// \brief Change in position along \f$\hat j\f$ axis
 /// \param[in] x independent variable
 /// \param[in] y dependent variables
-double f_rj(double x, const vector<double> &y){  
+double f_rj(double x, const vector<double> &y, void *params=0){  
   (void) x;   // prevent unused variable warning
   return y[3];
 }
@@ -64,7 +64,7 @@ double f_rj(double x, const vector<double> &y){
 ///
 /// Air resistance model: F= \f$k v^2\f$
 ///
-double f_vj(double x, const vector<double> &y){  
+double f_vj(double x, const vector<double> &y, void *params){  
   (void) x;
   return -air_k * sqrt(y[1]*y[1] + y[3]*y[3]) * y[3] / m - g;
   // return g;    // if no air constant acceleration along -j direction: F/m = -g

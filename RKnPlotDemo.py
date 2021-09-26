@@ -12,6 +12,9 @@ from math import sqrt
 # graphs are stored with generic names
 # each of our 'n' dependent vars are plotted vs the independent variable (t)
 tf=r.TFile("RKnDemo.root") # open file for read access
+if tf.IsZombie():
+    print("RKnDemo.root not found in current directory, run RKnDemo first")
+    sys.exit(1)
 
 tg_x_vs_t=tf.Get("xy0")   # dependent var[0] vs independent var
 tg_vx_vs_t=tf.Get("xy1")  # etc...

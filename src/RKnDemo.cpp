@@ -31,6 +31,12 @@ const double g=9.81;    ///< acceleration [m/s^2]
 const double m=1.0;     ///< mass of object [kg], nb for simple projectile motion does not depend on the mass
 const double air_k=0.1; ///< constant for air resistance. mass DOES matter with air resistance
 
+struct Params {
+  double g;
+  double m;
+  double air_k;
+} ;
+
 // functions to describe simple projectile motion
 // here use use ri,rj,rk to define directions to prevent confusion with
 // standard ODE notation, where x=independent variable, \vec y=dependent variable(s)
@@ -39,7 +45,7 @@ const double air_k=0.1; ///< constant for air resistance. mass DOES matter with 
 /// \brief Change in position along \f$\hat i\f$ axis
 /// \param[in] x independent variable
 /// \param[in] y dependent variables
-double f_ri(double x, const vector<double> &y){ 
+double f_ri(double x, const vector<double> &y, void *params=0){ 
   (void) x;   // prevent unused variable warning
   return y[1];
 }
@@ -47,7 +53,7 @@ double f_ri(double x, const vector<double> &y){
 /// \brief Change in velocity along  \f$\hat i\f$ axis
 /// \param[in] x independent variable
 /// \param[in] y dependent variables
-double f_vi(double x, const vector<double> &y){ 
+double f_vi(double x, const vector<double> &y, void *params=0){ 
   (void) x;
   return -air_k * sqrt(y[1]*y[1] + y[3]*y[3]) * y[1] / m;
   // return 0;  // if no air, no forces/acceleration along i direction in this problem
@@ -59,7 +65,7 @@ double f_vi(double x, const vector<double> &y){
 ///
 /// Air resistance model: F= \f$k v^2\f$
 ///
-double f_rj(double x, const vector<double> &y){  
+double f_rj(double x, const vector<double> &y, void *params=0){  
   (void) x;   // prevent unused variable warning
   return y[3];
 }
@@ -67,9 +73,10 @@ double f_rj(double x, const vector<double> &y){
 /// Change in velocity along  \f$\hat j\f$ axis
 /// \param[in] x independent variable
 /// \param[in] y dependent variables
-double f_vj(double x, const vector<double> &y){  
+double f_vj(double x, const vector<double> &y, void *params=0){  
   (void) x;
-  return -air_k * sqrt(y[1]*y[1] + y[3]*y[3]) * y[3] / m - g;
+  Params *p = (Params*)params;
+  return -p->air_k * sqrt(y[1]*y[1] + y[3]*y[3]) * y[3] / p->m - p->g;
   // return g;    // if no air constant acceleration along -j direction: F/m = -g
 }
 
@@ -78,7 +85,7 @@ double f_vj(double x, const vector<double> &y){
 /// \param[in] y dependent variables
 ///
 /// Returns 0(1) to flag continuation(termination) of calculation 
-double f_stop(double x, const vector<double> &y){
+double f_stop(double x, const vector<double> &y, void *params=0){
   (void) x;
   if (y[2]<0) return 1;  // stop calulation if the current step takes height to negative value
   return 0;  // continue calculation
@@ -94,7 +101,13 @@ int main(int argc, char **argv){
   UInt_t dw = 1.1*dh;
   // ******************************************************************************
   
-
+  // setup parameters
+  Params pars;
+  pars.g=9.81;
+  pars.m=1.0;
+  pars.air_k=0.1;
+  void *p_par = (void*) &pars;
+  
   // *** test 2: Use RK4SolveN to calculate simple projectile motion
   vector<pfunc_t> v_fun(4);   // 4 element vector of function pointers
   v_fun[0]=f_ri;
@@ -107,7 +120,7 @@ int main(int argc, char **argv){
   y0[1]=70;  // init velocity along i axis
   y0[2]=0;   // repeat for j-axis
   y0[3]=70;
-  auto tgN = RK4SolveN(v_fun, y0, 200, 0, 20, f_stop);
+  auto tgN = RK4SolveN(v_fun, y0, 200, 0, 20, p_par, f_stop);
   TCanvas *c2 = new TCanvas("c2","ODE solutions 2",dw,dh);
   tgN[2].Draw("a*");
   c2->Draw();

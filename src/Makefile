@@ -2,8 +2,8 @@ ROOTCFLAGS = $(shell root-config --cflags)
 ROOTLIBS   = $(shell root-config --libs)
 ROOTGLIBS  = $(shell root-config --glibs)
 ROOTFLAGS   = $(ROOTCFLAGS) $(ROOTLIBS) $(ROOTGLIBS) 
-CXXFLAGS  += $(ROOTCFLAGS) -I$(P56xxLIBS) -Wall -O3
-LDFLAGS    = $(ROOTLIBS) $(ROOTGLIBS) -Wl,-rpath,$(P56xxLIBS) -L$(P56xxLIBS) -lP56xx
+CXXFLAGS  += $(ROOTCFLAGS) -I$(ODELIB) -Wall -O3
+LDFLAGS    = $(ROOTLIBS) $(ROOTGLIBS) -Wl,-rpath,$(ODELIB) -L$(ODELIB) -lode
 GXX	   = g++ $(CXXFLAGS)
 
 SRCS = $(wildcard *.cpp)

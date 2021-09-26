@@ -27,7 +27,7 @@ double fun(double x, double y){
 }                                   // solution: 1-sqrt(x^3 + 2*x^2 +2*x+4)
 
 /// Same function, using interface that supports a coupled array of ODEs
-double fun_vy(double x, const vector<double> &y){
+double fun_vy(double x, const vector<double> &y, void *params=0){
   return (3*x*x+4*x+2)/2/(y[0]-1);   // y0[0] = -1
 }                                    // solution: 1-sqrt(x^3 + 2*x^2 + 2*x+ 4)
 

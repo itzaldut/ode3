@@ -36,7 +36,7 @@ TGraph RK4Solve(double (*f)(double x, double y), double y0,
 ///
 /// 
 ///
-typedef double func_t(double, const vector<double>&);
+typedef double func_t(double, const vector<double>&, void *params);
 
 ///
 /// \var typedef func_t* pfunc_t
@@ -50,24 +50,25 @@ TGraph RK4Solve(double (*f)(double x, double y), double y0,
 		int nsteps, double x0, double xmax);
 
 vector<double> RK4StepN(vector<pfunc_t> &fnlist, vector<double> y,
-			double x, double h);
+			double x, double h, void *params=0);
 
 vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
-			 int nsteps, double x0, double xmax, pfunc_t fstop=0);
+			 int nsteps, double x0, double xmax, void *params=0,
+			 pfunc_t fstop=0);
 
 void RK4SolveNx(vector<pfunc_t> &fnlist, vector<double> &y,
-			 int nsteps, double x0, double xmax, pfunc_t fstop=0);
+		int nsteps, double x0, double xmax, void *params=0,
+		pfunc_t fstop=0);
 
 vector<TGraph> RK4SolveN(vector<pfunc_t> &fnlist, vector<double> &y0,
-			 double h, double x0, pfunc_t fstop, int nmax=1000);
-
-
-vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
-			  int nsteps, double x0, double xmax, pfunc_t fstop=0,
-			  double errdef=1e-9, int maxrep=5);
-
+			 double h, double x0, pfunc_t fstop, void *params=0,
+			 int nmax=1000);
 
 vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
-			  double h,  double x0, pfunc_t fstop,
+			  int nsteps, double x0, double xmax, void *params=0,
+			  pfunc_t fstop=0, double errdef=1e-9, int maxrep=5);
+
+vector<TGraph> RK4SolveNA(vector<pfunc_t> &fnlist, vector<double> &y0,
+			  double h,  double x0, pfunc_t fstop, void *params=0,
 			  double errdef=1e-9, int maxrep=5, int maxsteps=1000);
 
