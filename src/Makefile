@@ -35,8 +35,8 @@ baseball2: baseball2.cpp $(ODELIB)/RKn.hpp
 projGSL: projGSL.cpp
 	$(GXX) $(CXXFLAGS) -o$@ $@.cpp $(LDFLAGS) $(GSLFLAGS)
 
-vterm: vterm.cpp ../odelib/RKn.hpp
-    $(GXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+vterm: vterm.cpp $(ODELIB)/RKn.hpp
+	$(GXX) $(CXXFLAGS) -o$@ $@.cpp $(LDFLAGS)
 
 clean:
 	rm -f *.o *.so *.d *~ $(EXES)
