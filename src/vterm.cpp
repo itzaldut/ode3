@@ -1,10 +1,3 @@
-///
-/// @file vterm_energy_terminal_fixed.cpp
-/// @brief Projectile motion: RK4 without air + terminal velocity vs mass with air
-/// @author ChatGPT
-/// @date 24 Nov 2025
-///
-
 #include "RKn.hpp"
 #include "TROOT.h"
 #include "TApplication.h"
@@ -29,7 +22,6 @@ struct Params {
     double air_k;
 };
 
-// --- RK4 functions ---
 double f_ri(double x, const vector<double> &y, void *params=0){ (void)x; return y[1]; }
 double f_rj(double x, const vector<double> &y, void *params=0){ (void)x; return y[3]; }
 
@@ -47,10 +39,8 @@ double f_vj(double x, const vector<double> &y, void *params=0){
     return air - p->g;
 }
 
-// Stop when projectile hits the ground
+//Define where the ball stops
 double f_stop_ground(double x, const vector<double> &y, void *params=0){ return (y[2] < 0) ? 1 : 0; }
-
-// Terminal velocity simulation never stops early
 double f_stop_terminal(double x, const vector<double> &y, void *params=0){ return 0; }
 
 int main(int argc, char **argv){
@@ -78,7 +68,6 @@ int main(int argc, char **argv){
     UInt_t dh = gClient->GetDisplayHeight()/2;  
     UInt_t dw = 1.1*dh;
 
-    // --- RK4 function pointers ---
     vector<pfunc_t> v_fun(4);
     v_fun[0] = f_ri;
     v_fun[1] = f_vi;
@@ -91,7 +80,7 @@ int main(int argc, char **argv){
     y[2] = 0;
     y[3] = v0 * sin(theta*M_PI/180.0);
 
-    // --- 1) No air resistance ---
+    // No air resistance, figure out if energy is cnserved
     pars.air_k = 0.0;  
     pars.m = 10.0;     
     double x0 = 0.0;
@@ -117,7 +106,6 @@ int main(int argc, char **argv){
         gTotal->SetPoint(i,t,kinetic+potential);
     }
 
-    // --- Plot trajectory ---
     TCanvas *c2 = new TCanvas("c2","Trajectory no air",dw,dh);
     tgN_noair[2].Draw("AL*");
     c2->Draw();
@@ -137,7 +125,7 @@ int main(int argc, char **argv){
     leg->Draw();
     cEnergy->Draw();
 
-    // --- 2) Terminal velocity vs mass ---
+    // Case were we are looking at the terminal velocity vs the mass 
     TGraph *gVtermSim = new TGraph();
     TGraph *gVtermAnal = new TGraph();
     pars.air_k = 0.1;
@@ -195,11 +183,11 @@ int main(int argc, char **argv){
     cDiscussion->Draw();
 
     TCanvas *cSave = new TCanvas("cSave","SavePDF");
-    cSave->Print("../vterm.pdf["); // open multipage PDF
+    cSave->Print("../vterm.pdf["); 
     cEnergy->Print("../vterm.pdf");
     cVterm->Print("../vterm.pdf");
     cDiscussion->Print("../vterm.pdf");
-    cSave->Print("../vterm.pdf]"); // close multipage PDF
+    cSave->Print("../vterm.pdf]"); 
  
    // --- Save all graphs ---
     TFile *tf = new TFile("RKnDemo_fixed.root","recreate");
