@@ -16,6 +16,7 @@ Optional parameters [default values]<br>
 * -m mass_of_projectile [10] kg
 * -k coefficient_of_air_resistance [0.1] kg/m
 
+Results for when I changed the values for baseball 1
 
 **RKnDemo**: Solves for projectile motion with a simple model of air resistance, force of air resistance = -kv^2<br>
 This program includes graphical output.  Detailed output is saved in TGraph objects in RKnDemo.root.  The file **RKnPlotDemo.py** shows how to access date in the TGraphs and can be used to generate additional plots.<br>
@@ -26,6 +27,18 @@ Optional parameters [default values]<br>
 * -k coefficient_of_air_resistance [0.1] kg/m
 
 **baseball1**:  Starter template for first baseball problem
+(xend,z0,theta0) = (18.500000,1.400000,1.000000)
+v_pitch = 31.369452 m/s
+********************************
+(my_root_env) [mgf3tf src]$ ./baseball1 -x 20 -t 45
+********************************
+(xend,z0,theta0) = (20.000000,1.400000,45.000000)
+v_pitch = 13.689232 m/s
+********************************
+(my_root_env) [mgf3tf src]$ ./baseball1 -z 5
+********************************
+(xend,z0,theta0) = (18.500000,5.000000,1.000000)
+v_pitch = 17.858696 m/s
 
 **baseball2**:  Starter template for second baseball problem
 
