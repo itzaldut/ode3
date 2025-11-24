@@ -2,20 +2,28 @@
 # this "simply" runs the make in the two subdirectories: odelib and src
 
 
-ODELIB =  $(PWD)/odelib
-export ODELIB
+# Compiler and flags
+GXX = g++
+CXXFLAGS = -std=c++17 -Wall
+LDFLAGS =
 
-SUBDIRS = odelib src
+# Paths
+SRC_DIR = src
+ODELIB = odelib
 
-.PHONY: subdirs $(SUBDIRS)
+# Files
+TARGET = baseball1
+SRC = $(SRC_DIR)/$(TARGET).cpp
+HEADERS = $(ODELIB)/RKn.hpp
 
-subdirs: $(SUBDIRS)
+# Default target
+all: $(TARGET)
 
-$(SUBDIRS): 
-	make -C $@
+# Build rule
+$(TARGET): $(SRC) $(HEADERS)
+	$(GXX) $(CXXFLAGS) -I$(ODELIB) -o $@ $(SRC) $(LDFLAGS)
 
+# Clean rule
 clean:
-	for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir clean ;\
-	done
+	rm -f $(TARGET)
 
